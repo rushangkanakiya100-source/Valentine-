@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>For Diya 💖</title>
+
+<style>
+body{
+    margin:0;
+    padding:0;
+    overflow:hidden;
+    background:black;
+    font-family:Arial, sans-serif;
+    text-align:center;
+    color:white;
+}
+
+/* YouTube Background */
+#ytbg{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    z-index:-1;
+    opacity:0.15;
+    pointer-events:none;
+}
+
+/* Floating Hearts */
+.heart{
+    position:absolute;
+    bottom:-10px;
+    font-size:20px;
+    animation:float 6s linear infinite;
+    color:pink;
+}
+@keyframes float{
+    0%{transform:translateY(0);opacity:1;}
+    100%{transform:translateY(-100vh);opacity:0;}
+}
+
+.container{
+    position:relative;
+    top:30vh;
+    padding:20px;
+}
+
+h1{
+    font-size:26px;
+    font-weight:bold;
+}
+
+button{
+    padding:15px 25px;
+    font-size:18px;
+    margin:15px;
+    border:none;
+    border-radius:10px;
+}
+
+#yes{
+    background:#ff1493;
+    color:white;
+}
+
+#no{
+    background:gray;
+    color:white;
+    position:absolute;
+}
+
+.graffiti{
+    position:absolute;
+    font-size:22px;
+    font-weight:bold;
+    color:#ff00ff;
+    transform:rotate(-25deg);
+}
+</style>
+</head>
+
+<body>
+
+<!-- Highway Maahi Ve (Muted autoplay, tap to unmute) -->
+<iframe id="ytbg"
+src="https://www.youtube.com/embed/vKDsAB1ccn0?autoplay=1&mute=1&loop=1&playlist=vKDsAB1ccn0"
+frameborder="0"
+allow="autoplay">
+</iframe>
+
+<div class="container" id="mainContent">
+<h1>💖 DIYA (PHAADOOO), <br> WILL YOU BE MY VALENTINE? 💖</h1>
+
+<button id="yes" onclick="yesClicked()">YES ❤️</button>
+<button id="no">NO 😜</button>
+</div>
+
+<script>
+
+/* Floating Hearts */
+function createHeart(){
+    const heart=document.createElement("div");
+    heart.classList.add("heart");
+    heart.innerHTML="💖";
+    heart.style.left=Math.random()*100+"vw";
+    heart.style.fontSize=(Math.random()*20+20)+"px";
+    heart.style.animationDuration=(Math.random()*3+3)+"s";
+    document.body.appendChild(heart);
+    setTimeout(()=>{heart.remove();},6000);
+}
+setInterval(createHeart,300);
+
+/* NO Button Escape */
+const noBtn=document.getElementById("no");
+function moveNo(){
+    const x=Math.random()*(window.innerWidth-100);
+    const y=Math.random()*(window.innerHeight-50);
+    noBtn.style.left=x+"px";
+    noBtn.style.top=y+"px";
+}
+noBtn.addEventListener("mouseover",moveNo);
+noBtn.addEventListener("touchstart",moveNo);
+
+/* YES Click */
+function yesClicked(){
+document.body.innerHTML=`
+<div style="background:black;height:100vh;padding-top:60px;">
+<h1 style="font-size:32px;font-weight:bold;color:#ff1493;">
+I KNEW YOU LOVE ME 💘🔥
+</h1>
+<img src="https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif" width="250">
+</div>
+`;
+
+for(let i=0;i<35;i++){
+let g=document.createElement("div");
+g.classList.add("graffiti");
+g.innerHTML="LOVE YOU DIYA 💕";
+g.style.top=Math.random()*100+"vh";
+g.style.left=Math.random()*100+"vw";
+document.body.appendChild(g);
+}
+}
+
+</script>
+
+</body>
+</html>
