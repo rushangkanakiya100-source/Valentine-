@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find the Hidden Hearts</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Pacifico&family=Quicksand:wght@400;600&display=swap');
+
+        :root {
+            --sky-top: #87CEEB;
+            --sky-bottom: #E0F7FA;
+            --grass-top: #A2D149;
+            --grass-bottom: #76B041;
+            --heart-color: #FF6B6B;
+            --primary-text: #2C3E50;
+        }
+
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Quicksand', sans-serif;
+            user-select: none;
+        }
+
+        /* --- Scenery (CSS Art) --- */
+        .scene {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--sky-top), var(--sky-bottom) 60%, var(--grass-top) 60%, var(--grass-bottom));
+            z-index: 0;
+        }
+
+        /* Interactive Elements styling */
+        .interactive {
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .interactive:hover {
+            transform: scale(1.05);
+            filter: brightness(1.1);
+        }
+
+        .sun {
+            position: absolute;
+            top: 50px;
+            right: 50px;
+            width: 80px;
+            height: 80px;
+            background: #FFD700;
+            border-radius: 50%;
+            box-shadow: 0 0 40px #FFD700, 0 0 80px #FFA500;
+            animation: pulse-sun 4s infinite alternate;
+        }
+
+        .cloud {
+            position: absolute;
+            background: #fff;
+            border-radius: 50px;
+            opacity: 0.9;
+        }
+
+        .cloud::after,
+        .cloud::before {
+            content: '';
+            position: absolute;
+            background: inherit;
+            border-radius: 50%;
+        }
+
+        .cloud-1 {
+            top: 80px;
+            left: 10%;
+            width: 120px;
+            height: 40px;
+        }
+
+        /* Removed float for easier clicking */
+        .cloud-1::after {
+            top: -20px;
+            left: 15px;
+            width: 50px;
+            height: 50px;
+        }
+
+        .cloud-1::before {
+            top: -30px;
+            left: 50px;
+            width: 60px;
+            height: 60px;
+        }
+
+        .cloud-2 {
+            top: 150px;
+            left: 60%;
+            width: 100px;
+            height: 35px;
+            animation: float 35s infinite linear reverse;
+        }
+
+        .cloud-2::after {
+            top: -15px;
+            left: 10px;
+            width: 40px;
+            height: 40px;
+        }
+
+        .cloud-2::before {
+            top: -25px;
+            left: 40px;
+            width: 50px;
+            height: 50px;
+        }
+
+        .tree {
+            position: absolute;
+            bottom: 40%;
+            z-index: 1;
+        }
+
+        .trunk {
+            width: 30px;
+            height: 100px;
+            background: #8B4513;
+            margin: 0 auto;
+            border-radius: 5px;
+        }
+
+        .foliage {
+            width: 120px;
+            height: 120px;
+            background: #FFC0CB;
+            /* Cherry blossom */
+            border-radius: 50%;
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 20px 20px 0 #FFB6C1, -20px 10px 0 #FF69B4;
+        }
+
+        .tree-1 {
+            left: 10%;
+            transform: scale(1.2);
+        }
+
+        .tree-2 {
+            right: 15%;
+            transform: scale(1.1);
+        }
+
+        .tree-3 {
+            left: 40%;
+            transform: scale(0.8);
+            bottom: 42%;
+            opacity: 0.9;
+        }
+
+        .picnic-blanket {
+            position: absolute;
+            bottom: 15%;
+            left: 50%;
+            transform: translateX(-50%) rotate(-5deg) skewX(20deg);
+            width: 250px;
+            height: 180px;
+            background:
+                repeating-linear-gradient(90deg, #fff, #fff 20px, #ffcccc 20px, #ffcccc 40px),
+                repeating-linear-gradient(0deg, #fff, #fff 20px, #ffcccc 20px, #ffcccc 40px);
+            background-blend-mode: multiply;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            z-index: 2;
+        }
+
+        .river {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 15%;
+            background: #4FC3F7;
+            z-index: 2;
+            overflow: hidden;
+        }
+
+        .wave {
+            position: absolute;
+            width: 200%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 40%;
+            animation: wave 10s infinite linear;
+        }
+
+        /* --- UI & Hearts --- */
+        #game-ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px 25px;
+            border-radius: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            font-family: 'Pacifico', cursive;
+            color: var(--heart-color);
+            font-size: 1.5rem;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #game-title {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Pacifico', cursive;
+            color: var(--heart-color);
+            /* Or white with shadow */
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.8);
+            z-index: 90;
+            pointer-events: none;
+            text-align: center;
+            width: 100%;
+        }
+
+        .hidden-heart {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: var(--heart-color);
+            transform: rotate(45deg) scale(0);
+            /* Initially hidden/scaled down */
+            cursor: pointer;
+            z-index: 50;
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+            /* Can't click until revealed */
+        }
+
+        .hidden-heart::before,
+        .hidden-heart::after {
+            content: '';
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: var(--heart-color);
+            border-radius: 50%;
+        }
+
+        .hidden-heart::before {
+            top: -15px;
+            left: 0;
+        }
+
+        .hidden-heart::after {
+            top: 0;
+            left: -15px;
+        }
+
+        /* Revealed State */
+        .hidden-heart.revealed {
+            transform: rotate(45deg) scale(1);
+            opacity: 1;
+            pointer-events: auto;
+            animation: bounce 1s infinite alternate;
+        }
+
+        @keyframes bounce {
+            0% {
+                transform: rotate(45deg) scale(1) translateY(0);
+            }
+
+            100% {
+                transform: rotate(45deg) scale(1.1) translateY(-10px);
+            }
+        }
+
+        /* Positions to pop out to */
+        #h1 {
+            top: 5%;
+            left: 16%;
+        }
+
+        /* From cloud */
+        #h2 {
+            bottom: 70%;
+            left: 10%;
+        }
+
+        /* From tree 1 */
+        #h3 {
+            bottom: 25%;
+            left: 50%;
+        }
+
+        /* From blanket */
+        #h4 {
+            bottom: 10%;
+            right: 50%;
+        }
+
+        /* From river */
+        #h5 {
+            top: 55%;
+            right: 15%;
+        }
+
+        /* From tree 2 */
+
+        /* Animations */
+        @keyframes float {
+            0% {
+                transform: translateX(-50px);
+            }
+
+            100% {
+                transform: translateX(calc(100vw + 50px));
+            }
+        }
+
+        @keyframes pulse-sun {
+            0% {
+                transform: scale(1);
+            }
+
+            100% {
+                transform: scale(1.1);
+            }
+        }
+
+        @keyframes wave {
+            0% {
+                transform: translateX(0) rotate(0deg);
+            }
+
+            100% {
+                transform: translateX(-50%) rotate(360deg);
+            }
+        }
+
+        @keyframes pop {
+            0% {
+                transform: scale(0);
+            }
+
+            50% {
+                transform: scale(1.4);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .found-anim {
+            animation: riseUp 1s ease-out forwards;
+            pointer-events: none;
+        }
+
+        @keyframes riseUp {
+            0% {
+                transform: translateY(0) scale(1) rotate(45deg);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(-100px) scale(1.5) rotate(45deg);
+                opacity: 0;
+            }
+        }
+
+        /* --- Modal --- */
+        #proposal-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            border: 2px solid #fff;
+        }
+
+        h1 {
+            font-family: 'Pacifico', cursive;
+            color: #E91E63;
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+        }
+
+        p {
+            color: #555;
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+        }
+
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            position: relative;
+            height: 60px;
+        }
+
+        button {
+            padding: 12px 35px;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+
+        .btn-yes {
+            background: #E91E63;
+            color: white;
+            box-shadow: 0 4px 15px rgba(233, 30, 99, 0.3);
+        }
+
+        .btn-yes:hover {
+            transform: scale(1.1);
+            background: #D81B60;
+        }
+
+        .btn-no {
+            background: #ddd;
+            color: #555;
+            position: absolute;
+            left: 60%;
+        }
+
+        /* Success State */
+        #celebration {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            /* Dark overlay for contrast */
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            text-align: center;
+            color: #fff;
+            text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            /* Strong text shadow */
+            z-index: 2000;
+        }
+
+        #celebration h1 {
+            font-size: 5rem;
+            color: #fff;
+            margin: 0;
+            animation: pop 0.8s;
+        }
+
+        #celebration p {
+            color: #fff;
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        /* Confetti Canvas */
+        #confetti {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1500;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Game Scene -->
+    <div class="scene">
+        <div class="sun"></div>
+
+        <!-- Interactive Cloud -->
+        <div class="cloud cloud-1 interactive" onclick="revealHeart('h1')"></div>
+
+        <div class="cloud cloud-2"></div>
+
+        <!-- Interactive Trees -->
+        <div class="tree tree-1 interactive" onclick="revealHeart('h2')">
+            <div class="foliage"></div>
+            <div class="trunk"></div>
+        </div>
+        <div class="tree tree-3">
+            <div class="foliage"></div>
+            <div class="trunk"></div>
+        </div>
+
+        <!-- Interactive Picnic -->
+        <div class="picnic-blanket interactive" onclick="revealHeart('h3')"></div>
+
+        <div class="tree tree-2 interactive" onclick="revealHeart('h5')">
+            <div class="foliage"></div>
+            <div class="trunk"></div>
+        </div>
+
+        <div class="river interactive" onclick="revealHeart('h4')">
+            <div class="wave" style="bottom: -20px; left: 0;"></div>
+            <div class="wave" style="bottom: -30px; left: -20px; opacity: 0.5;"></div>
+        </div>
+    </div>
+
+    <!-- UI -->
+    <div id="game-title">Find the hidden hearts 💕</div>
+    <div id="game-ui">
+        <span>❤️</span>
+        <span id="score">0 / 5</span>
+    </div>
+
+    <!-- Hidden Hearts (Initially Hidden, Popped out by JS) -->
+    <div class="hidden-heart" id="h1" onclick="collectHeart(this)"></div>
+    <div class="hidden-heart" id="h2" onclick="collectHeart(this)"></div>
+    <div class="hidden-heart" id="h3" onclick="collectHeart(this)"></div>
+    <div class="hidden-heart" id="h4" onclick="collectHeart(this)"></div>
+    <div class="hidden-heart" id="h5" onclick="collectHeart(this)"></div>
+
+    <!-- Proposal Modal -->
+    <div id="proposal-modal">
+        <div class="modal-content">
+            <h1>You found my heart!</h1>
+            <p>Now I have a question for you...<br>Will you be my Valentine?</p>
+
+            <div class="btn-group">
+                <form action="https://formsubmit.co/demo@gmail.com" method="POST" id="proposal-form" target="_blank"
+                    style="display:none;">
+                    <input type="Diya" name="response" value="YES! She said YES!">
+                    <input type="Diya" name="_autoresponse" value="Yay! Happy Valentine's Day!">
+                </form>
+
+                <button class="btn-yes" onclick="acceptProposal()">YES! ❤️</button>
+                <button class="btn-no" id="btn-no" onmouseover="dodgeButton()">No</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="celebration">
+        <h1>YAY! ❤️</h1>
+        <p>Best Valentine's Day Ever!</p>
+    </div>
+    <canvas id="confetti"></canvas>
+
+    <script>
+        let heartsFound = 0;
+        const totalHearts = 5;
+        const scoreDisplay = document.getElementById('score');
+        const modal = document.getElementById('proposal-modal');
+        const noBtn = document.getElementById('btn-no');
+
+        // State to track found hearts to prevent double counting
+        const foundHearts = new Set();
+
+        // Reveal Logic (Counts as finding)
+        function revealHeart(heartId) {
+            const heart = document.getElementById(heartId);
+
+            // If valid heart and not already found/counted
+            if (heart && !foundHearts.has(heartId)) {
+                foundHearts.add(heartId); // Mark as found
+                heart.classList.add('revealed');
+
+                // Increment Score immediately
+                heartsFound++;
+                scoreDisplay.textContent = `${heartsFound} / ${totalHearts}`;
+
+                // Check Win Condition
+                if (heartsFound === totalHearts) {
+                    setTimeout(() => {
+                        modal.style.display = 'flex';
+                    }, 1500); // Slightly longer delay to let them see the last heart
+                }
+            }
+        }
+
+        function collectHeart(element) {
+            // This function is now just for fun/cleanup (clicking the heart itself)
+            // It doesn't affect the score since reveal handled it.
+
+            if (element.style.pointerEvents === 'none') return;
+            element.style.pointerEvents = 'none';
+            element.classList.remove('revealed');
+
+            // Animation
+            element.classList.add('found-anim');
+        }
+
+        // "No" button dodge logic
+        function dodgeButton() {
+            const maxX = 200;
+            const maxY = 100;
+            const minX = -200;
+            const minY = -100;
+
+            const randomX = Math.random() * (maxX - minX) + minX;
+            const randomY = Math.random() * (maxY - minY) + minY;
+
+            noBtn.style.transform = `translate(${randomX}px, ${randomY}px)`;
+        }
+
+        function acceptProposal() {
+            const form = document.getElementById('proposal-form');
+            if (form.action.includes("your@email.com")) {
+                // Just for demo, normally we wouldn't show this
+            }
+            form.submit();
+
+            // 2. Hide modal, show celebration
+            modal.style.display = 'none';
+            document.getElementById('game-ui').style.display = 'none';
+            // document.querySelector('.scene').style.filter = 'blur(5px)'; // Removed blur for clear background, overlay handles it
+
+            const celebration = document.getElementById('celebration');
+            celebration.style.display = 'flex'; // Changed to flex for centering
+
+            document.getElementById('confetti').style.display = 'block';
+
+            startConfetti();
+        }
+
+        /* --- Confetti Logic (Simple Implementation) --- */
+        const canvas = document.getElementById('confetti');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const pieces = [];
+        const colors = ['#f00', '#0f0', '#00f', '#ff0', '#0ff', '#f0f', '#FF69B4'];
+
+        function startConfetti() {
+            for (let i = 0; i < 300; i++) {
+                pieces.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height - canvas.height,
+                    w: Math.random() * 10 + 5,
+                    h: Math.random() * 10 + 5,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    speed: Math.random() * 5 + 2,
+                    angle: Math.random() * 6.28
+                });
+            }
+            animateConfetti();
+        }
+
+        function animateConfetti() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            pieces.forEach(p => {
+                p.y += p.speed;
+                p.x += Math.sin(p.angle) * 2;
+                p.angle += 0.1;
+                if (p.y > canvas.height) p.y = -20;
+
+                ctx.fillStyle = p.color;
+                ctx.fillRect(p.x, p.y, p.w, p.h);
+            });
+            requestAnimationFrame(animateConfetti);
+        }
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+    </script>
+</body>
+
+</html>
